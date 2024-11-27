@@ -4,6 +4,7 @@
 #include <ctime>
 #include <malloc.h>
 #include <cstring>
+#include <cstdint>
 
 #include "plain.hh"
 #include "mmx.hh"
@@ -77,9 +78,9 @@ int main(int argc, char *argv[])
 
     /* Picture read */
 
-    unsigned char *y_data = (unsigned char *)malloc(Y_SIZE);
-    unsigned char *u_data = (unsigned char *)malloc(U_SIZE);
-    unsigned char *v_data = (unsigned char *)malloc(V_SIZE);
+    uint8_t *y_data = (uint8_t *)malloc(Y_SIZE);
+    uint8_t *u_data = (uint8_t *)malloc(U_SIZE);
+    uint8_t *v_data = (uint8_t *)malloc(V_SIZE);
 
     // Read fields
     yuv_file.read(reinterpret_cast<char *>(y_data), Y_SIZE);
@@ -87,9 +88,9 @@ int main(int argc, char *argv[])
     yuv_file.read(reinterpret_cast<char *>(v_data), V_SIZE);
     yuv_file.close();
 
-    unsigned char **y_result = (unsigned char **)malloc(84 * Y_SIZE);
-    unsigned char **u_result = (unsigned char **)malloc(84 * U_SIZE);
-    unsigned char **v_result = (unsigned char **)malloc(84 * V_SIZE);
+    uint8_t **y_result = (uint8_t **)malloc(84 * Y_SIZE);
+    uint8_t **u_result = (uint8_t **)malloc(84 * U_SIZE);
+    uint8_t **v_result = (uint8_t **)malloc(84 * V_SIZE);
 
     clock_t start_time, end_time;
 
@@ -97,7 +98,7 @@ int main(int argc, char *argv[])
     {
     case Option::Plain:
         start_time = clock();
-        solve_plain(y_data, u_data, v_data, y_result, u_result, v_result);
+        solve_plain_int(y_data, u_data, v_data, y_result, u_result, v_result);
         end_time = clock();
         break;
     case Option::Mmx:

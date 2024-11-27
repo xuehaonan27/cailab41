@@ -41,13 +41,32 @@ void solve_avx512(
                 size_t y_index2 = (j + 1) * WIDTH + i;
                 size_t uv_index = (j / 2) * (WIDTH / 2) + (i / 2);
 
+size_t y_index = j * WIDTH + i;
+                // 加载 Y 数据（两行）
+                __m512i y_line1 = _mm512_loadu_si512(&y_data[y_index]);
+                __m512i y_line2 = _mm512_loadu_si512(&y_data[y_index + WIDTH]);
+
+                // 加载 U 和 V 数据
+                __m512i u_data_vec = _mm512_loadu_si512(&u_data[uv_index]);
+                __m512i v_data_vec = _mm512_loadu_si512(&v_data[uv_index]);
+
+                // 解码为浮点数
+                __m512 y_flt1 = _mm512_cvtepi32_ps(_mm512_unpacklo_epi8(y_line1, _mm512_setzero_si512()));
+                __m512 y_flt2 = _mm512_cvtepi32_ps(_mm512_unpacklo_epi8(y_line2, _mm512_setzero_si512()));
+                __m512 u_flt = _mm512_cvtepi32_ps(_mm512_unpacklo_epi8(u_data_vec, _mm512_setzero_si512()));
+                __m512 v_flt = _mm512_cvtepi32_ps(_mm512_unpacklo_epi8(v_data_vec, _mm512_setzero_si512()));
+
                 // 加载Y分量（两行，16个像素）
                 __m512i y_vec1 = _mm512_cvtepu8_epi32(_mm_loadu_si128((const __m128i *)(y_data + y_index1)));
                 __m512i y_vec2 = _mm512_cvtepu8_epi32(_mm_loadu_si128((const __m128i *)(y_data + y_index2)));
 
-                // 加载U和V分量（每16个像素共享一个U/V）
-                __m512i u_vec = _mm512_cvtepu8_epi32(_mm_set1_epi8(*(u_data + uv_index)));
-                __m512i v_vec = _mm512_cvtepu8_epi32(_mm_set1_epi8(*(v_data + uv_index)));
+                // 加载U和V分量（每行8个元素，需要扩展为16个元素以匹配Y分量）
+                __m256i u_half = _mm256_loadu_si256((const __m256i *)(u_data + uv_index));
+                __m256i v_half = _mm256_loadu_si256((const __m256i *)(v_data + uv_index));
+
+                // 广播U和V分量以扩展到16个像素
+                __m512i u_vec = _mm512_inserti64x4(_mm512_castsi256_si512(u_half), u_half, 1);
+                __m512i v_vec = _mm512_inserti64x4(_mm512_castsi256_si512(v_half), v_half, 1);
 
                 // 转换为浮点数
                 __m512 y_f1 = _mm512_cvtepi32_ps(y_vec1);
