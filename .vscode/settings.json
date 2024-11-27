@@ -51,7 +51,8 @@
         "cinttypes": "cpp",
         "typeinfo": "cpp",
         "fstream": "cpp",
-        "iostream": "cpp"
+        "iostream": "cpp",
+        "cstring": "cpp"
     },
-    "cmake.sourceDirectory": "/root/cailab41/cpp"
+    "cmake.sourceDirectory": "/home/ubuntu/cailab41/cpp"
 }
