@@ -2,11 +2,11 @@
 #define AVX_HH
 
 void solve_avx512(
-    const unsigned char *y_data,
-    const unsigned char *u_data,
-    const unsigned char *v_data,
-    unsigned char **y_result,
-    unsigned char **u_result,
-    unsigned char **v_result);
+    const uint8_t *y_data,
+    const uint8_t *u_data,
+    const uint8_t *v_data,
+    uint8_t **y_result,
+    uint8_t **u_result,
+    uint8_t **v_result);
 
 #endif // AVX_HH

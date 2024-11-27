@@ -54,8 +54,8 @@ void solve_plain(
 // #define YUV2G_OPT(y, u, v) clamp((298 * (y) - 100 * (u) - 208 * (v) + 34784) >> 8)
 // #define YUV2B_OPT(y, u, v) clamp((298 * (y) + 516 * (u) - 70688) >> 8)
 
-static __inline__ int
-clamp(int x)
+static __inline__ int16_t
+clamp(int16_t x)
 {
     if (x > 255)
         return 255;
@@ -80,12 +80,13 @@ void solve_plain_int(
             for (int i = 0; i < WIDTH; i++)
             {
                 size_t y_index = j * WIDTH + i;
-                size_t uv_index = size_t(j / 2) * size_t(WIDTH / 2) + size_t(i / 2); // Cannot be changed
+                size_t uv_index = size_t(j / 2) * size_t(WIDTH / 2) + size_t(i / 2);
 
                 const uint8_t y = y_data[y_index];
                 const uint8_t u = u_data[uv_index];
                 const uint8_t v = v_data[uv_index];
 
+// YUV -> RGB
 #define YUV2R(y, u, v) clamp((298 * ((y) - 16) + 409 * ((v) - 128) + 128) >> 8)
 #define YUV2G(y, u, v) clamp((298 * ((y) - 16) - 100 * ((u) - 128) - 208 * ((v) - 128) + 128) >> 8)
 #define YUV2B(y, u, v) clamp((298 * ((y) - 16) + 516 * ((u) - 128) + 128) >> 8)
