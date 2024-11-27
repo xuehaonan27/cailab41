@@ -16,6 +16,15 @@ void solve_avx512(
 
     const __m512i u16_512_16 = _mm512_set1_epi16(16);
     const __m512i u16_512_298 = _mm512_set1_epi16(298);
+    const __m512i u16_512_409 = _mm512_set1_epi16(409);
+    const __m512i u16_512_128 = _mm512_set1_epi16(128);
+    const __m512i u16_512_8 = _mm512_set1_epi16(8);
+    const __m512i u16_512_100 = _mm512_set1_epi16(100);
+    const __m512i u16_512_208 = _mm512_set1_epi16(208);
+    const __m512i u16_512_516 = _mm512_set1_epi16(516);
+    const __m512i u16_512_0xff = _mm512_set1_epi16(0xff);
+    const __m512i u16_512_255 = _mm512_set1_epi16(255);
+    const __m512i u16_512_0 = _mm512_set1_epi16(0);
 
     for (int image_idx = 0; image_idx < 84; image_idx++)
     {
@@ -47,7 +56,32 @@ void solve_avx512(
                 __m512i v_vec = _mm512_cvtepu8_epi16(v_vec_repeated);
 
                 // YUV -> ARGB
-                
+                __m512i yuv2rgb_component_1_yvec1 = _mm512_mullo_epi16(u16_512_298, _mm512_sub_epi16(y_vec_1, u16_512_16));
+                __m512i yuv2rgb_component_2 = _mm512_mullo_epi16(u16_512_409, _mm512_sub_epi16(v_vec, u16_512_128));
+                __m512i r_yvec1_unclamped = _mm512_srli_epi16(
+                    _mm512_add_epi16(
+                        _mm512_add_epi16(
+                            yuv2rgb_component_1_yvec1,
+                            yuv2rgb_component_2),
+                        u16_512_128),
+                    8);
+                __m512i r_yvec1_clamped = _mm512_max_epi16(_mm512_min_epi16(r_yvec1_unclamped, u16_512_255), u16_512_0);
+                __m512i r_yvec1 = _mm512_and_si512(r_yvec1_clamped, u16_512_0xff);
+
+                __m512i yuv2rgb_component_3 = _mm512_mullo_epi16(u16_512_100, _mm512_sub_epi16(u_vec, u16_512_128));
+                __m512i yuv2rgb_component_4 = _mm512_mullo_epi16(u16_512_208, _mm512_sub_epi16(v_vec, u16_512_128));
+                __m512i g_yvec1_unclamped = _mm512_srli_epi16(
+                    _mm512_add_epi16(
+                        _mm512_sub_epi16(
+                            _mm512_sub_epi16(
+                                yuv2rgb_component_1_yvec1,
+                                yuv2rgb_component_3),
+                            yuv2rgb_component_4),
+                        u16_512_128),
+                    8);
+
+                __m512i g_yvec1_clamped = _mm512_max_epi16(_mm512_min_epi16(g_yvec1_unclamped, u16_512_255), u16_512_0);
+                __m512i g_yvec1 = _mm512_and_si512(g_yvec1_clamped, u16_512_0xff);
             }
         }
     }
