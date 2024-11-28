@@ -36,6 +36,13 @@ void solve_avx512(
     const __m512i u16_512_94 = _mm512_set1_epi16(94);
     const __m512i u16_512_18 = _mm512_set1_epi16(18);
 
+    const __m512i load_permute_mask = _mm512_set_epi16(
+        15, 15, 14, 14, 13, 13, 12, 12, 11, 11, 10, 10, 9, 9,
+        8, 8, 7, 7, 6, 6, 5, 5, 4, 4, 3, 3, 2, 2, 1, 1, 0, 0);
+    const __m256i shuffle_mask = _mm256_set_epi8(
+        31, 29, 27, 25, 23, 21, 19, 17, 30, 28, 26, 24, 22, 20, 18, 16,
+        15, 13, 11, 9, 7, 5, 3, 1, 14, 12, 10, 8, 6, 4, 2, 0);
+
     for (int image_idx = 0; image_idx < 84; image_idx++)
     {
         const uint8_t alpha = 1 + image_idx * 3;
@@ -58,15 +65,11 @@ void solve_avx512(
                 __m256i v_vec_16 = _mm256_cvtepu8_epi16(v_vec_8);
 
                 __m512i u_vec = _mm512_permutexvar_epi16(
-                    _mm512_set_epi16(
-                        15, 15, 14, 14, 13, 13, 12, 12, 11, 11, 10, 10, 9, 9,
-                        8, 8, 7, 7, 6, 6, 5, 5, 4, 4, 3, 3, 2, 2, 1, 1, 0, 0),
+                    load_permute_mask,
                     _mm512_castsi256_si512(u_vec_16));
 
                 __m512i v_vec = _mm512_permutexvar_epi16(
-                    _mm512_set_epi16(
-                        15, 15, 14, 14, 13, 13, 12, 12, 11, 11, 10, 10, 9, 9,
-                        8, 8, 7, 7, 6, 6, 5, 5, 4, 4, 3, 3, 2, 2, 1, 1, 0, 0),
+                    load_permute_mask,
                     _mm512_castsi256_si512(v_vec_16));
 
                 // YUV -> ARGB
@@ -184,18 +187,6 @@ void solve_avx512(
                                 u16_512_128),
                             8),
                         u16_512_128);
-                /*__m512i u2_yvec2 =
-                    _mm512_add_epi16(
-                        _mm512_srli_epi16(
-                            _mm512_add_epi16(
-                                _mm512_add_epi16(
-                                    _mm512_sub_epi16(
-                                        _mm512_mullo_epi16(u16_512_minus38, r2_yvec2),
-                                        _mm512_mullo_epi16(u16_512_74, g2_yvec2)),
-                                    _mm512_mullo_epi16(u16_512_112, b2_yvec2)),
-                                u16_512_128),
-                            8),
-                        u16_512_128);*/
 
                 __m512i v2_yvec1 =
                     _mm512_add_epi16(
@@ -209,44 +200,22 @@ void solve_avx512(
                                 u16_512_128),
                             8),
                         u16_512_128);
-                /*__m512i v2_yvec2 =
-                    _mm512_add_epi16(
-                        _mm512_srli_epi16(
-                            _mm512_add_epi16(
-                                _mm512_sub_epi16(
-                                    _mm512_sub_epi16(
-                                        _mm512_mullo_epi16(u16_512_112, r2_yvec2),
-                                        _mm512_mullo_epi16(u16_512_94, g2_yvec2)),
-                                    _mm512_mullo_epi16(u16_512_18, b2_yvec2)),
-                                u16_512_128),
-                            8),
-                        u16_512_128);*/
 
                 __m256i y2_yvec1_packed = _mm512_cvtepi16_epi8(y2_yvec1);
                 __m256i y2_yvec2_packed = _mm512_cvtepi16_epi8(y2_yvec2);
                 __m256i u2_yvec1_packed_repeated = _mm512_cvtepi16_epi8(u2_yvec1);
-                // __m256i u2_yvec2_packed_repeated = _mm512_cvtepi16_epi8(u2_yvec2);
-                __m256i v2_yvec1_packed_repeated = _mm512_cvtepi16_epi8(v2_yvec1);
-                // __m256i v2_yvec2_packed_repeated = _mm512_cvtepi16_epi8(v2_yvec2);
 
-                __m256i shuffle_mask = _mm256_set_epi8(
-                    31, 29, 27, 25, 23, 21, 19, 17, 30, 28, 26, 24, 22, 20, 18, 16,
-                    15, 13, 11, 9, 7, 5, 3, 1, 14, 12, 10, 8, 6, 4, 2, 0);
+                __m256i v2_yvec1_packed_repeated = _mm512_cvtepi16_epi8(v2_yvec1);
+
                 __m256i u2_yvec1_shuffled = _mm256_shuffle_epi8(u2_yvec1_packed_repeated, shuffle_mask);
-                // __m256i u2_yvec2_shuffled = _mm256_shuffle_epi8(u2_yvec2_packed_repeated, shuffle_mask);
                 __m256i v2_yvec1_shuffled = _mm256_shuffle_epi8(v2_yvec1_packed_repeated, shuffle_mask);
-                // __m256i v2_yvec2_shuffled = _mm256_shuffle_epi8(v2_yvec2_packed_repeated, shuffle_mask);
 
                 const int imm8 = 0xD8;
                 __m256i u2_yvec1_permuted = _mm256_permute4x64_epi64(u2_yvec1_shuffled, imm8);
-                // __m256i u2_yvec2_permuted = _mm256_permute4x64_epi64(u2_yvec2_shuffled, imm8);
                 __m256i v2_yvec1_permuted = _mm256_permute4x64_epi64(v2_yvec1_shuffled, imm8);
-                // __m256i v2_yvec2_permuted = _mm256_permute4x64_epi64(v2_yvec2_shuffled, imm8);
 
                 __m128i u2_yvec1_packed = _mm256_castsi256_si128(u2_yvec1_permuted);
-                // __m128i u2_yvec2_packed = _mm256_castsi256_si128(u2_yvec2_permuted);
                 __m128i v2_yvec1_packed = _mm256_castsi256_si128(v2_yvec1_permuted);
-                // __m128i v2_yvec2_packed = _mm256_castsi256_si128(v2_yvec2_permuted);
 
                 // Store value
                 _mm256_storeu_epi8((uint8_t *)y_result + image_idx * Y_SIZE + y_index_1, y2_yvec1_packed);
