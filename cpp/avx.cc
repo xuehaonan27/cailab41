@@ -6,6 +6,35 @@
 
 #include <cstdio>
 
+#define VECTOR_SIZE 32 // An AVX512 vector register could hold 32 uint16_t
+
+static __m512i u16_512_16 = _mm512_set1_epi16(16);
+static __m512i u16_512_298 = _mm512_set1_epi16(298);
+static __m512i u16_512_409 = _mm512_set1_epi16(409);
+static __m512i u16_512_128 = _mm512_set1_epi16(128);
+static __m512i u16_512_8 = _mm512_set1_epi16(8);
+static __m512i u16_512_100 = _mm512_set1_epi16(100);
+static __m512i u16_512_208 = _mm512_set1_epi16(208);
+static __m512i u16_512_516 = _mm512_set1_epi16(516);
+static __m512i u16_512_0xff = _mm512_set1_epi16(0xff);
+static __m512i u16_512_255 = _mm512_set1_epi16(255);
+static __m512i u16_512_0 = _mm512_set1_epi16(0);
+static __m512i u16_512_66 = _mm512_set1_epi16(66);
+static __m512i u16_512_129 = _mm512_set1_epi16(129);
+static __m512i u16_512_25 = _mm512_set1_epi16(25);
+static __m512i u16_512_minus38 = _mm512_set1_epi16(-38);
+static __m512i u16_512_74 = _mm512_set1_epi16(74);
+static __m512i u16_512_112 = _mm512_set1_epi16(112);
+static __m512i u16_512_94 = _mm512_set1_epi16(94);
+static __m512i u16_512_18 = _mm512_set1_epi16(18);
+static __m512i load_permute_mask = _mm512_set_epi16(
+    15, 15, 14, 14, 13, 13, 12, 12, 11, 11, 10, 10, 9, 9,
+    8, 8, 7, 7, 6, 6, 5, 5, 4, 4, 3, 3, 2, 2, 1, 1, 0, 0);
+static __m256i shuffle_mask = _mm256_set_epi8(
+    31, 29, 27, 25, 23, 21, 19, 17, 30, 28, 26, 24, 22, 20, 18, 16,
+    15, 13, 11, 9, 7, 5, 3, 1, 14, 12, 10, 8, 6, 4, 2, 0);
+const int imm8 = 0xD8;
+
 void solve_avx512(
     const uint8_t *y_data,
     const uint8_t *u_data,
@@ -14,35 +43,6 @@ void solve_avx512(
     uint8_t **u_result,
     uint8_t **v_result)
 {
-#define VECTOR_SIZE 32 // An AVX512 vector register could hold 32 uint16_t
-
-    const __m512i u16_512_16 = _mm512_set1_epi16(16);
-    const __m512i u16_512_298 = _mm512_set1_epi16(298);
-    const __m512i u16_512_409 = _mm512_set1_epi16(409);
-    const __m512i u16_512_128 = _mm512_set1_epi16(128);
-    const __m512i u16_512_8 = _mm512_set1_epi16(8);
-    const __m512i u16_512_100 = _mm512_set1_epi16(100);
-    const __m512i u16_512_208 = _mm512_set1_epi16(208);
-    const __m512i u16_512_516 = _mm512_set1_epi16(516);
-    const __m512i u16_512_0xff = _mm512_set1_epi16(0xff);
-    const __m512i u16_512_255 = _mm512_set1_epi16(255);
-    const __m512i u16_512_0 = _mm512_set1_epi16(0);
-    const __m512i u16_512_66 = _mm512_set1_epi16(66);
-    const __m512i u16_512_129 = _mm512_set1_epi16(129);
-    const __m512i u16_512_25 = _mm512_set1_epi16(25);
-    const __m512i u16_512_minus38 = _mm512_set1_epi16(-38);
-    const __m512i u16_512_74 = _mm512_set1_epi16(74);
-    const __m512i u16_512_112 = _mm512_set1_epi16(112);
-    const __m512i u16_512_94 = _mm512_set1_epi16(94);
-    const __m512i u16_512_18 = _mm512_set1_epi16(18);
-    const __m512i load_permute_mask = _mm512_set_epi16(
-        15, 15, 14, 14, 13, 13, 12, 12, 11, 11, 10, 10, 9, 9,
-        8, 8, 7, 7, 6, 6, 5, 5, 4, 4, 3, 3, 2, 2, 1, 1, 0, 0);
-    const __m256i shuffle_mask = _mm256_set_epi8(
-        31, 29, 27, 25, 23, 21, 19, 17, 30, 28, 26, 24, 22, 20, 18, 16,
-        15, 13, 11, 9, 7, 5, 3, 1, 14, 12, 10, 8, 6, 4, 2, 0);
-    const int imm8 = 0xD8;
-
     for (int image_idx = 0; image_idx < 84; image_idx++)
     {
         const uint8_t alpha = 1 + image_idx * 3;
