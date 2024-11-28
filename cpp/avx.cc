@@ -67,12 +67,14 @@ void solve_avx512(
                 __m512i v_vec = _mm512_permutexvar_epi16(load_permute_mask, _mm512_castsi256_si512(v_vec_16));
 
                 // YUV -> ARGB
+                __m512i u_minus_128 = _mm512_sub_epi16(u_vec, u16_512_128);
+                __m512i v_minus_128 = _mm512_sub_epi16(v_vec, u16_512_128);
                 __m512i yuv2rgb_component_1_yvec1 = _mm512_mullo_epi16(u16_512_298, _mm512_sub_epi16(y_vec_1, u16_512_16));
                 __m512i yuv2rgb_component_1_yvec2 = _mm512_mullo_epi16(u16_512_298, _mm512_sub_epi16(y_vec_2, u16_512_16));
-                __m512i yuv2rgb_component_2 = _mm512_mullo_epi16(u16_512_409, _mm512_sub_epi16(v_vec, u16_512_128));
-                __m512i yuv2rgb_component_3 = _mm512_mullo_epi16(u16_512_100, _mm512_sub_epi16(u_vec, u16_512_128)); // 100 * ((u) - 128)
-                __m512i yuv2rgb_component_4 = _mm512_mullo_epi16(u16_512_208, _mm512_sub_epi16(v_vec, u16_512_128)); // 208 * ((v) - 128)
-                __m512i yuv2rgb_component_5 = _mm512_mullo_epi16(u16_512_516, _mm512_sub_epi16(u_vec, u16_512_128)); // 516 * ((u) - 128)
+                __m512i yuv2rgb_component_2 = _mm512_mullo_epi16(u16_512_409, v_minus_128); // 409 * ((v) - 128)
+                __m512i yuv2rgb_component_3 = _mm512_mullo_epi16(u16_512_100, u_minus_128); // 100 * ((u) - 128)
+                __m512i yuv2rgb_component_4 = _mm512_mullo_epi16(u16_512_208, v_minus_128); // 208 * ((v) - 128)
+                __m512i yuv2rgb_component_5 = _mm512_mullo_epi16(u16_512_516, u_minus_128); // 516 * ((u) - 128)
                 __m512i r_yvec1_unclamped = _mm512_srli_epi16(
                     _mm512_add_epi16(
                         _mm512_add_epi16(
@@ -107,14 +109,14 @@ void solve_avx512(
                     8);
                 __m512i b_yvec1_unclamped = _mm512_srli_epi16(
                     _mm512_add_epi16(
-                        _mm512_adds_epi16(
+                        _mm512_add_epi16(
                             yuv2rgb_component_1_yvec1,
                             yuv2rgb_component_5),
                         u16_512_128),
                     8);
                 __m512i b_yvec2_unclamped = _mm512_srli_epi16(
                     _mm512_add_epi16(
-                        _mm512_adds_epi16(
+                        _mm512_add_epi16(
                             yuv2rgb_component_1_yvec2,
                             yuv2rgb_component_5),
                         u16_512_128),

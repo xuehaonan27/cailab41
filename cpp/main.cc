@@ -113,6 +113,7 @@ int main(int argc, char *argv[])
         start_time = clock();
         solve_avx512(y_data, u_data, v_data, y_result, u_result, v_result);
         end_time = clock();
+        break;
     default:
         break;
     }

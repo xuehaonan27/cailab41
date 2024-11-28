@@ -4,7 +4,7 @@ project(simd-lab)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_C_STANDARD 11)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mavx512dq -mavx512bw -mavx512vl")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mavx512dq -mavx512bw -mavx512vl -O3")
 
 add_library(plain plain.cc)
 add_library(mmx mmx.cc)

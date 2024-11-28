@@ -87,9 +87,12 @@ void solve_plain_int(
                 const uint8_t v = v_data[uv_index];
 
 // YUV -> RGB
-#define YUV2R(y, u, v) clamp((298 * ((y) - 16) + 409 * ((v) - 128) + 128) >> 8)
-#define YUV2G(y, u, v) clamp((298 * ((y) - 16) - 100 * ((u) - 128) - 208 * ((v) - 128) + 128) >> 8)
-#define YUV2B(y, u, v) clamp((298 * ((y) - 16) + 516 * ((u) - 128) + 128) >> 8)
+// #define YUV2R(y, u, v) clamp((298 * ((y) - 16) + 409 * ((v) - 128) + 128) >> 8)
+// #define YUV2G(y, u, v) clamp((298 * ((y) - 16) - 100 * ((u) - 128) - 208 * ((v) - 128) + 128) >> 8)
+// #define YUV2B(y, u, v) clamp((298 * ((y) - 16) + 516 * ((u) - 128) + 128) >> 8)
+#define YUV2R(y, u, v) clamp((298 * (y) + 409 * (v) - 56992) >> 8)
+#define YUV2G(y, u, v) clamp((298 * (y) - 100 * (u) - 208 * (v) + 34784) >> 8)
+#define YUV2B(y, u, v) clamp((298 * (y) + 516 * (u) - 70688) >> 8)
 
                 const uint8_t r = YUV2R(y, u, v) & 0xff;
                 const uint8_t g = YUV2G(y, u, v) & 0xff;
@@ -104,9 +107,9 @@ void solve_plain_int(
 #define RGB2Y(r, g, b) (uint8_t)(((66 * (r) + 129 * (g) + 25 * (b) + 128) >> 8) + 16)
 #define RGB2U(r, g, b) (uint8_t)(((-38 * (r) - 74 * (g) + 112 * (b) + 128) >> 8) + 128)
 #define RGB2V(r, g, b) (uint8_t)(((112 * (r) - 94 * (g) - 18 * (b) + 128) >> 8) + 128)
-                uint8_t y2 = RGB2Y((uint16_t)r2, (uint16_t)g2, (uint16_t)b2);
-                uint8_t u2 = RGB2U((uint16_t)r2, (uint16_t)g2, (uint16_t)b2);
-                uint8_t v2 = RGB2V((uint16_t)r2, (uint16_t)g2, (uint16_t)b2);
+                uint8_t y2 = RGB2Y(r2, g2, b2);
+                uint8_t u2 = RGB2U(r2, g2, b2);
+                uint8_t v2 = RGB2V(r2, g2, b2);
 
                 *(uint8_t *)((uint8_t *)y_result + image_idx * Y_SIZE + y_index) = y2;
                 *(uint8_t *)((uint8_t *)u_result + image_idx * U_SIZE + uv_index) = u2;
