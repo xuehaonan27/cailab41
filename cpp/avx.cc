@@ -184,7 +184,7 @@ void solve_avx512(
                                 u16_512_128),
                             8),
                         u16_512_128);
-                __m512i u2_yvec2 =
+                /*__m512i u2_yvec2 =
                     _mm512_add_epi16(
                         _mm512_srli_epi16(
                             _mm512_add_epi16(
@@ -195,7 +195,7 @@ void solve_avx512(
                                     _mm512_mullo_epi16(u16_512_112, b2_yvec2)),
                                 u16_512_128),
                             8),
-                        u16_512_128);
+                        u16_512_128);*/
 
                 __m512i v2_yvec1 =
                     _mm512_add_epi16(
@@ -209,7 +209,7 @@ void solve_avx512(
                                 u16_512_128),
                             8),
                         u16_512_128);
-                __m512i v2_yvec2 =
+                /*__m512i v2_yvec2 =
                     _mm512_add_epi16(
                         _mm512_srli_epi16(
                             _mm512_add_epi16(
@@ -220,33 +220,33 @@ void solve_avx512(
                                     _mm512_mullo_epi16(u16_512_18, b2_yvec2)),
                                 u16_512_128),
                             8),
-                        u16_512_128);
+                        u16_512_128);*/
 
                 __m256i y2_yvec1_packed = _mm512_cvtepi16_epi8(y2_yvec1);
                 __m256i y2_yvec2_packed = _mm512_cvtepi16_epi8(y2_yvec2);
                 __m256i u2_yvec1_packed_repeated = _mm512_cvtepi16_epi8(u2_yvec1);
-                __m256i u2_yvec2_packed_repeated = _mm512_cvtepi16_epi8(u2_yvec2);
+                // __m256i u2_yvec2_packed_repeated = _mm512_cvtepi16_epi8(u2_yvec2);
                 __m256i v2_yvec1_packed_repeated = _mm512_cvtepi16_epi8(v2_yvec1);
-                __m256i v2_yvec2_packed_repeated = _mm512_cvtepi16_epi8(v2_yvec2);
+                // __m256i v2_yvec2_packed_repeated = _mm512_cvtepi16_epi8(v2_yvec2);
 
                 __m256i shuffle_mask = _mm256_set_epi8(
                     31, 29, 27, 25, 23, 21, 19, 17, 30, 28, 26, 24, 22, 20, 18, 16,
                     15, 13, 11, 9, 7, 5, 3, 1, 14, 12, 10, 8, 6, 4, 2, 0);
                 __m256i u2_yvec1_shuffled = _mm256_shuffle_epi8(u2_yvec1_packed_repeated, shuffle_mask);
-                __m256i u2_yvec2_shuffled = _mm256_shuffle_epi8(u2_yvec2_packed_repeated, shuffle_mask);
+                // __m256i u2_yvec2_shuffled = _mm256_shuffle_epi8(u2_yvec2_packed_repeated, shuffle_mask);
                 __m256i v2_yvec1_shuffled = _mm256_shuffle_epi8(v2_yvec1_packed_repeated, shuffle_mask);
-                __m256i v2_yvec2_shuffled = _mm256_shuffle_epi8(v2_yvec2_packed_repeated, shuffle_mask);
+                // __m256i v2_yvec2_shuffled = _mm256_shuffle_epi8(v2_yvec2_packed_repeated, shuffle_mask);
 
                 const int imm8 = 0xD8;
                 __m256i u2_yvec1_permuted = _mm256_permute4x64_epi64(u2_yvec1_shuffled, imm8);
-                __m256i u2_yvec2_permuted = _mm256_permute4x64_epi64(u2_yvec2_shuffled, imm8);
+                // __m256i u2_yvec2_permuted = _mm256_permute4x64_epi64(u2_yvec2_shuffled, imm8);
                 __m256i v2_yvec1_permuted = _mm256_permute4x64_epi64(v2_yvec1_shuffled, imm8);
-                __m256i v2_yvec2_permuted = _mm256_permute4x64_epi64(v2_yvec2_shuffled, imm8);
+                // __m256i v2_yvec2_permuted = _mm256_permute4x64_epi64(v2_yvec2_shuffled, imm8);
 
                 __m128i u2_yvec1_packed = _mm256_castsi256_si128(u2_yvec1_permuted);
-                __m128i u2_yvec2_packed = _mm256_castsi256_si128(u2_yvec2_permuted);
+                // __m128i u2_yvec2_packed = _mm256_castsi256_si128(u2_yvec2_permuted);
                 __m128i v2_yvec1_packed = _mm256_castsi256_si128(v2_yvec1_permuted);
-                __m128i v2_yvec2_packed = _mm256_castsi256_si128(v2_yvec2_permuted);
+                // __m128i v2_yvec2_packed = _mm256_castsi256_si128(v2_yvec2_permuted);
 
                 // Store value
                 _mm256_storeu_epi8((uint8_t *)y_result + image_idx * Y_SIZE + y_index_1, y2_yvec1_packed);
