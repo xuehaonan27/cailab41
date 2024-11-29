@@ -5,6 +5,7 @@
 #include <malloc.h>
 #include <cstring>
 #include <cstdint>
+#include <cstdio>
 
 #include "plain.hh"
 #include "mmx.hh"
@@ -209,6 +210,120 @@ int solve_part3(Option opt, fs::path &yuv_path_1, fs::path &yuv_path_2, fs::path
     return EXIT_SUCCESS;
 }
 
+int solve_test(fs::path &yuv_path_1, fs::path &yuv_path_2, fs::path &save_path)
+{
+    std::cout << "YUV file: " << yuv_path_1 << ' ' << yuv_path_2 << std::endl;
+    std::cout << "Test result to " << save_path << std::endl;
+
+    FILE *output_file = fopen(save_path.c_str(), "w");
+    if (!output_file) {
+        std::cerr << "Fail to open the output file" << std::endl;
+    }
+
+    std::ifstream yuv_file_1(yuv_path_1, std::ios::binary);
+    if (!yuv_file_1)
+    {
+        std::cerr << "Cannot open " << yuv_path_1 << std::endl;
+        return EXIT_FAILURE;
+    }
+
+    std::ifstream yuv_file_2(yuv_path_2, std::ios::binary);
+    if (!yuv_file_2)
+    {
+        std::cerr << "Cannot open " << yuv_path_2 << std::endl;
+        return EXIT_FAILURE;
+    }
+
+    /* Picture read */
+    uint8_t *p1_y_data = (uint8_t *)malloc(Y_SIZE);
+    uint8_t *p1_u_data = (uint8_t *)malloc(U_SIZE);
+    uint8_t *p1_v_data = (uint8_t *)malloc(V_SIZE);
+
+    uint8_t *p2_y_data = (uint8_t *)malloc(Y_SIZE);
+    uint8_t *p2_u_data = (uint8_t *)malloc(U_SIZE);
+    uint8_t *p2_v_data = (uint8_t *)malloc(V_SIZE);
+
+    // Read fields
+    yuv_file_1.read(reinterpret_cast<char *>(p1_y_data), Y_SIZE);
+    yuv_file_1.read(reinterpret_cast<char *>(p1_u_data), U_SIZE);
+    yuv_file_1.read(reinterpret_cast<char *>(p1_v_data), V_SIZE);
+    yuv_file_1.close();
+    yuv_file_2.read(reinterpret_cast<char *>(p2_y_data), Y_SIZE);
+    yuv_file_2.read(reinterpret_cast<char *>(p2_u_data), U_SIZE);
+    yuv_file_2.read(reinterpret_cast<char *>(p2_v_data), V_SIZE);
+    yuv_file_2.close();
+
+    uint8_t **y_result_plain = (uint8_t **)malloc(84 * Y_SIZE);
+    uint8_t **u_result_plain = (uint8_t **)malloc(84 * U_SIZE);
+    uint8_t **v_result_plain = (uint8_t **)malloc(84 * V_SIZE);
+
+    uint8_t **y_result_avx512 = (uint8_t **)malloc(84 * Y_SIZE);
+    uint8_t **u_result_avx512 = (uint8_t **)malloc(84 * U_SIZE);
+    uint8_t **v_result_avx512 = (uint8_t **)malloc(84 * V_SIZE);
+
+    solve_plain_part3(
+        p1_y_data, p1_u_data, p1_v_data,
+        p2_y_data, p2_u_data, p2_v_data,
+        y_result_plain, u_result_plain, v_result_plain);
+
+    solve_avx512_part3(
+        p1_y_data, p1_u_data, p1_v_data,
+        p2_y_data, p2_u_data, p2_v_data,
+        y_result_avx512, u_result_avx512, v_result_avx512);
+
+    // Compare all these bytes
+    
+
+    // Y result
+    for (int i = 0; i < 84 * Y_SIZE; i++)
+    {
+        uint8_t plain_byte = *((uint8_t *)y_result_plain + i);
+        uint8_t avx512_byte = *((uint8_t *)y_result_avx512 + i);
+        if (plain_byte != avx512_byte)
+        {
+            fprintf(output_file, "Y[%d] plain=%02x avx512=%02x\n", i, plain_byte, avx512_byte);
+        }
+    }
+
+    // U result
+    for (int i = 0; i < 84 * U_SIZE; i++)
+    {
+        uint8_t plain_byte = *((uint8_t *)u_result_plain + i);
+        uint8_t avx512_byte = *((uint8_t *)u_result_avx512 + i);
+        if (plain_byte != avx512_byte)
+        {
+            fprintf(output_file, "U[%d] plain=%02x avx512=%02x\n", i, plain_byte, avx512_byte);
+        }
+    }
+
+    // V result
+    for (int i = 0; i < 84 * V_SIZE; i++)
+    {
+        uint8_t plain_byte = *((uint8_t *)v_result_plain + i);
+        uint8_t avx512_byte = *((uint8_t *)v_result_avx512 + i);
+        if (plain_byte != avx512_byte)
+        {
+            fprintf(output_file, "V[%d] plain=%02x avx512=%02x\n", i, plain_byte, avx512_byte);
+        }
+    }
+    
+    fclose(output_file);
+
+    free(p1_y_data);
+    free(p1_u_data);
+    free(p1_v_data);
+    free(p2_y_data);
+    free(p2_u_data);
+    free(p2_v_data);
+    free(y_result_plain);
+    free(u_result_plain);
+    free(v_result_plain);
+    free(y_result_avx512);
+    free(u_result_avx512);
+    free(v_result_avx512);
+    return EXIT_SUCCESS;
+}
+
 int main(int argc, char *argv[])
 {
     // test();
@@ -259,6 +374,13 @@ int main(int argc, char *argv[])
         fs::path yuv_path_2 = argv[4];
         fs::path save_dir = argv[5];
         return solve_part3(opt, yuv_path_1, yuv_path_2, save_dir);
+    }
+    else if (part == "test")
+    {
+        fs::path yuv_path_1 = argv[3];
+        fs::path yuv_path_2 = argv[4];
+        fs::path save_path = argv[5];
+        return solve_test(yuv_path_1, yuv_path_2, save_path);
     }
     else
     {
