@@ -98,7 +98,7 @@ void solve_plain_int(
                 // #define YUV2B(y, u, v) clamp((298 * (y) + 516 * (u) - 70688) >> 8)
 
 #define YUV2R(y, u, v) clamp(((42 * (y) - 24224 + 153 * (v)) >> 8) + ((y) - 128) + (v))
-#define YUV2G(y, u, v) clamp((((42 * (y) - 100 * (u)) + (2016 - 208 * (v))) >> 8) + ((y) + 128))
+#define YUV2G(y, u, v) clamp((((42 * (y) - 100 * (u)) + (2016 + 47 * (v))) >> 8) + ((y) + 128 - (v)))
 #define YUV2B(y, u, v) clamp(((42 * (y) + 4 * (u) - 5152) >> 8) + ((y) - 256) + 2 * (u))
 
                 const uint8_t r = YUV2R(y, u, v) & 0xff;
