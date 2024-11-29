@@ -28,6 +28,21 @@ static __m512i u16_512_112 = _mm512_set1_epi16(112);
 static __m512i u16_512_94 = _mm512_set1_epi16(94);
 static __m512i u16_512_18 = _mm512_set1_epi16(18);
 static __m512i u16_512_256 = _mm512_set1_epi16(256);
+static __m512i u16_512_42 = _mm512_set1_epi16(42);
+static __m512i u16_512_153 = _mm512_set1_epi16(153);
+static __m512i u16_512_4 = _mm512_set1_epi16(4);
+static __m512i u16_512_2 = _mm512_set1_epi16(2);
+static __m512i u16_512_38 = _mm512_set1_epi16(38);
+static __m512i u16_512_24224 = _mm512_set1_epi16(24224);
+static __m512i u16_512_2016 = _mm512_set1_epi16(2016);
+static __m512i u16_512_5152 = _mm512_set1_epi16(5152);
+static __m512i u16_512_8192 = _mm512_set1_epi16(8192);
+static __m512i u16_512_16384 = _mm512_set1_epi16(16384);
+static __m512i u16_512_1920 = _mm512_set1_epi16(1920);
+static __m512i u16_512_120 = _mm512_set1_epi16(120);
+static __m512i u16_512_47 = _mm512_set1_epi16(47);
+
+
 static __m512i load_permute_mask = _mm512_set_epi16(
     15, 15, 14, 14, 13, 13, 12, 12, 11, 11, 10, 10, 9, 9,
     8, 8, 7, 7, 6, 6, 5, 5, 4, 4, 3, 3, 2, 2, 1, 1, 0, 0);
@@ -68,7 +83,74 @@ void solve_avx512(
                 __m512i v_vec = _mm512_permutexvar_epi16(load_permute_mask, _mm512_castsi256_si512(v_vec_16));
 
                 // YUV -> ARGB
-                __m512i u_minus_128 = _mm512_sub_epi16(u_vec, u16_512_128);
+                __m512i y_vec_1_mul_42 = _mm512_mullo_epi16(u16_512_42, y_vec_1); // 42 * (y1)
+                __m512i y_vec_2_mul_42 = _mm512_mullo_epi16(u16_512_42, y_vec_2); // 42 * (y2)
+                __m512i v_vec_mul_153 = _mm512_mullo_epi16(u16_512_153, v_vec);   // 153 * (v)
+                __m512i u_vec_mul_100 = _mm512_mullo_epi16(u16_512_100, u_vec);   // 100 * (u)
+                __m512i v_vec_mul_47 = _mm512_mullo_epi16(u16_512_47, v_vec);   // 47 * (v)
+                __m512i u_vec_mul_4 = _mm512_mullo_epi16(u16_512_4, u_vec);       // 4 * (u)
+
+                __m512i r_yvec1_unclamped =
+                    _mm512_add_epi16(
+                        _mm512_srai_epi16(
+                            _mm512_add_epi16(
+                                _mm512_sub_epi16(y_vec_1_mul_42, u16_512_24224), v_vec_mul_153),
+                            8),
+                        _mm512_add_epi16(_mm512_sub_epi16(y_vec_1, u16_512_128), v_vec));
+
+                __m512i r_yvec2_unclamped =
+                    _mm512_add_epi16(
+                        _mm512_srai_epi16(
+                            _mm512_add_epi16(
+                                _mm512_sub_epi16(y_vec_2_mul_42, u16_512_24224), v_vec_mul_153),
+                            8),
+                        _mm512_add_epi16(_mm512_sub_epi16(y_vec_2, u16_512_128), v_vec));
+
+                __m512i g_yvec1_unclamped =
+                    _mm512_add_epi16(
+                        _mm512_srai_epi16(
+                            _mm512_add_epi16(
+                                _mm512_sub_epi16(y_vec_1_mul_42, u_vec_mul_100),
+                                _mm512_add_epi16(u16_512_2016, v_vec_mul_47)),
+                            8),
+                        _mm512_sub_epi16(_mm512_add_epi16(y_vec_1, u16_512_128), v_vec));
+
+                __m512i g_yvec2_unclamped =
+                    _mm512_add_epi16(
+                        _mm512_srai_epi16(
+                            _mm512_add_epi16(
+                                _mm512_sub_epi16(y_vec_2_mul_42, u_vec_mul_100),
+                                _mm512_add_epi16(u16_512_2016, v_vec_mul_47)),
+                            8),
+                        _mm512_sub_epi16(_mm512_add_epi16(y_vec_2, u16_512_128), v_vec));
+
+                __m512i b_yvec1_unclamped =
+                    _mm512_add_epi16(
+                        _mm512_srai_epi16(
+                            _mm512_sub_epi16(
+                                _mm512_add_epi16(
+                                    y_vec_1_mul_42,
+                                    u_vec_mul_4),
+                                u16_512_5152),
+                            8),
+                        _mm512_add_epi16(
+                            _mm512_sub_epi16(y_vec_1, u16_512_256),
+                            _mm512_mullo_epi16(u16_512_2, u_vec)));
+
+                __m512i b_yvec2_unclamped =
+                    _mm512_add_epi16(
+                        _mm512_srai_epi16(
+                            _mm512_sub_epi16(
+                                _mm512_add_epi16(
+                                    y_vec_2_mul_42,
+                                    u_vec_mul_4),
+                                u16_512_5152),
+                            8),
+                        _mm512_add_epi16(
+                            _mm512_sub_epi16(y_vec_2, u16_512_256),
+                            _mm512_mullo_epi16(u16_512_2, u_vec)));
+
+                /*__m512i u_minus_128 = _mm512_sub_epi16(u_vec, u16_512_128);
                 __m512i v_minus_128 = _mm512_sub_epi16(v_vec, u16_512_128);
                 __m512i yuv2rgb_component_1_yvec1 = _mm512_mullo_epi16(u16_512_298, _mm512_sub_epi16(y_vec_1, u16_512_16));
                 __m512i yuv2rgb_component_1_yvec2 = _mm512_mullo_epi16(u16_512_298, _mm512_sub_epi16(y_vec_2, u16_512_16));
@@ -121,7 +203,7 @@ void solve_avx512(
                             yuv2rgb_component_1_yvec2,
                             yuv2rgb_component_5),
                         u16_512_128),
-                    8);
+                    8);*/
 
                 __m512i r_yvec1_clamped = _mm512_max_epi16(_mm512_min_epi16(r_yvec1_unclamped, u16_512_255), u16_512_0);
                 __m512i r_yvec2_clamped = _mm512_max_epi16(_mm512_min_epi16(r_yvec2_unclamped, u16_512_255), u16_512_0);
@@ -137,15 +219,64 @@ void solve_avx512(
                 __m512i b_yvec2 = _mm512_and_si512(b_yvec2_clamped, u16_512_0xff);
 
                 // Alpha mix
-                __m512i r2_yvec1 = _mm512_srli_epi16(_mm512_mullo_epi16(alpha_vec, r_yvec1), 8);
-                __m512i g2_yvec1 = _mm512_srli_epi16(_mm512_mullo_epi16(alpha_vec, g_yvec1), 8);
-                __m512i b2_yvec1 = _mm512_srli_epi16(_mm512_mullo_epi16(alpha_vec, b_yvec1), 8);
-                __m512i r2_yvec2 = _mm512_srli_epi16(_mm512_mullo_epi16(alpha_vec, r_yvec2), 8);
-                __m512i g2_yvec2 = _mm512_srli_epi16(_mm512_mullo_epi16(alpha_vec, g_yvec2), 8);
-                __m512i b2_yvec2 = _mm512_srli_epi16(_mm512_mullo_epi16(alpha_vec, b_yvec2), 8);
+                __m512i r_prime_yvec1 = _mm512_srli_epi16(_mm512_mullo_epi16(alpha_vec, r_yvec1), 8);
+                __m512i g_prime_yvec1 = _mm512_srli_epi16(_mm512_mullo_epi16(alpha_vec, g_yvec1), 8);
+                __m512i b_prime_yvec1 = _mm512_srli_epi16(_mm512_mullo_epi16(alpha_vec, b_yvec1), 8);
+                __m512i r_prime_yvec2 = _mm512_srli_epi16(_mm512_mullo_epi16(alpha_vec, r_yvec2), 8);
+                __m512i g_prime_yvec2 = _mm512_srli_epi16(_mm512_mullo_epi16(alpha_vec, g_yvec2), 8);
+                __m512i b_prime_yvec2 = _mm512_srli_epi16(_mm512_mullo_epi16(alpha_vec, b_yvec2), 8);
 
                 // ARGB -> YUV
-                __m512i y2_yvec1 =
+
+                __m512i y_prime_yvec1 =
+                    _mm512_add_epi16(
+                        _mm512_srai_epi16(
+                            _mm512_add_epi16(
+                                _mm512_add_epi16(
+                                    _mm512_sub_epi16(_mm512_mullo_epi16(u16_512_66, r_prime_yvec1), u16_512_8192),
+                                    _mm512_sub_epi16(_mm512_mullo_epi16(u16_512_129, g_prime_yvec1), u16_512_16384)),
+                                _mm512_sub_epi16(_mm512_mullo_epi16(u16_512_25, b_prime_yvec1), u16_512_1920)),
+                            8),
+                        u16_512_120);
+
+                __m512i y_prime_yvec2 =
+                    _mm512_add_epi16(
+                        _mm512_srai_epi16(
+                            _mm512_add_epi16(
+                                _mm512_add_epi16(
+                                    _mm512_sub_epi16(_mm512_mullo_epi16(u16_512_66, r_prime_yvec2), u16_512_8192),
+                                    _mm512_sub_epi16(_mm512_mullo_epi16(u16_512_129, g_prime_yvec2), u16_512_16384)),
+                                _mm512_sub_epi16(_mm512_mullo_epi16(u16_512_25, b_prime_yvec2), u16_512_1920)),
+                            8),
+                        u16_512_120);
+
+                __m512i u_prime_yvec1 =
+                    _mm512_add_epi16(
+                        _mm512_srai_epi16(
+                            _mm512_add_epi16(
+                                _mm512_sub_epi16(
+                                    _mm512_mullo_epi16(u16_512_112, b_prime_yvec1),
+                                    _mm512_mullo_epi16(u16_512_38, r_prime_yvec1)),
+                                _mm512_sub_epi16(
+                                    u16_512_128,
+                                    _mm512_mullo_epi16(u16_512_74, g_prime_yvec1))),
+                            8),
+                        u16_512_128);
+
+                __m512i v_prime_yvec1 =
+                    _mm512_add_epi16(
+                        _mm512_srai_epi16(
+                            _mm512_add_epi16(
+                                _mm512_sub_epi16(
+                                    _mm512_mullo_epi16(u16_512_112, r_prime_yvec1),
+                                    _mm512_mullo_epi16(u16_512_94, g_prime_yvec1)),
+                                _mm512_sub_epi16(
+                                    u16_512_128,
+                                    _mm512_mullo_epi16(u16_512_18, b_prime_yvec1))),
+                            8),
+                        u16_512_128);
+
+                /*__m512i y2_yvec1 =
                     _mm512_add_epi16(
                         _mm512_srli_epi16(
                             _mm512_add_epi16(
@@ -194,24 +325,30 @@ void solve_avx512(
                                     _mm512_mullo_epi16(u16_512_18, b2_yvec1)),
                                 u16_512_128),
                             8),
-                        u16_512_128);
+                        u16_512_128);*/
 
-                __m256i y2_yvec1_packed = _mm512_cvtepi16_epi8(y2_yvec1);
-                __m256i y2_yvec2_packed = _mm512_cvtepi16_epi8(y2_yvec2);
-                __m256i u2_yvec1_packed_repeated = _mm512_cvtepi16_epi8(u2_yvec1);
-                __m256i v2_yvec1_packed_repeated = _mm512_cvtepi16_epi8(v2_yvec1);
-                __m256i u2_yvec1_shuffled = _mm256_shuffle_epi8(u2_yvec1_packed_repeated, shuffle_mask);
-                __m256i v2_yvec1_shuffled = _mm256_shuffle_epi8(v2_yvec1_packed_repeated, shuffle_mask);
-                __m256i u2_yvec1_permuted = _mm256_permute4x64_epi64(u2_yvec1_shuffled, imm8);
-                __m256i v2_yvec1_permuted = _mm256_permute4x64_epi64(v2_yvec1_shuffled, imm8);
-                __m128i u2_yvec1_packed = _mm256_castsi256_si128(u2_yvec1_permuted);
-                __m128i v2_yvec1_packed = _mm256_castsi256_si128(v2_yvec1_permuted);
+                // __m256i y_prime_yvec1_packed = _mm512_cvtepi16_epi8(_mm512_max_epi16(_mm512_min_epi16(y_prime_yvec1, u16_512_255), u16_512_0));
+                // __m256i y_prime_yvec2_packed = _mm512_cvtepi16_epi8(_mm512_max_epi16(_mm512_min_epi16(y_prime_yvec2, u16_512_255), u16_512_0));
+                // __m256i u_prime_yvec1_packed_repeated = _mm512_cvtepi16_epi8(_mm512_max_epi16(_mm512_min_epi16(u_prime_yvec1, u16_512_255), u16_512_0));
+                // __m256i v_prime_yvec1_packed_repeated = _mm512_cvtepi16_epi8(_mm512_max_epi16(_mm512_min_epi16(v_prime_yvec1, u16_512_255), u16_512_0));
+
+                __m256i y_prime_yvec1_packed = _mm512_cvtepi16_epi8(y_prime_yvec1);
+                __m256i y_prime_yvec2_packed = _mm512_cvtepi16_epi8(y_prime_yvec2);
+                __m256i u_prime_yvec1_packed_repeated = _mm512_cvtepi16_epi8(u_prime_yvec1);
+                __m256i v_prime_yvec1_packed_repeated = _mm512_cvtepi16_epi8(v_prime_yvec1);
+
+                __m256i u_prime_yvec1_shuffled = _mm256_shuffle_epi8(u_prime_yvec1_packed_repeated, shuffle_mask);
+                __m256i v_prime_yvec1_shuffled = _mm256_shuffle_epi8(v_prime_yvec1_packed_repeated, shuffle_mask);
+                __m256i u_prime_yvec1_permuted = _mm256_permute4x64_epi64(u_prime_yvec1_shuffled, imm8);
+                __m256i v_prime_yvec1_permuted = _mm256_permute4x64_epi64(v_prime_yvec1_shuffled, imm8);
+                __m128i u_prime_yvec1_packed = _mm256_castsi256_si128(u_prime_yvec1_permuted);
+                __m128i v_prime_yvec1_packed = _mm256_castsi256_si128(v_prime_yvec1_permuted);
 
                 // Store value
-                _mm256_storeu_epi8((uint8_t *)y_result + image_idx * Y_SIZE + y_index_1, y2_yvec1_packed);
-                _mm256_storeu_epi8((uint8_t *)y_result + image_idx * Y_SIZE + y_index_2, y2_yvec2_packed);
-                _mm_storeu_epi8((uint8_t *)u_result + image_idx * U_SIZE + uv_index, u2_yvec1_packed);
-                _mm_storeu_epi8((uint8_t *)v_result + image_idx * V_SIZE + uv_index, v2_yvec1_packed);
+                _mm256_storeu_epi8((uint8_t *)y_result + image_idx * Y_SIZE + y_index_1, y_prime_yvec1_packed);
+                _mm256_storeu_epi8((uint8_t *)y_result + image_idx * Y_SIZE + y_index_2, y_prime_yvec2_packed);
+                _mm_storeu_epi8((uint8_t *)u_result + image_idx * U_SIZE + uv_index, u_prime_yvec1_packed);
+                _mm_storeu_epi8((uint8_t *)v_result + image_idx * V_SIZE + uv_index, v_prime_yvec1_packed);
             }
         }
     }
