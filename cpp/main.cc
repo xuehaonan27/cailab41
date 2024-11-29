@@ -172,7 +172,10 @@ int solve_part3(Option opt, fs::path &yuv_path_1, fs::path &yuv_path_2, fs::path
         break;
     case Option::Avx512:
         start_time = clock();
-        // solve_avx512(y_data, u_data, v_data, y_result, u_result, v_result);
+        solve_avx512_part3(
+            p1_y_data, p1_u_data, p1_v_data,
+            p2_y_data, p2_u_data, p2_v_data,
+            y_result, u_result, v_result);
         end_time = clock();
         break;
     default:
