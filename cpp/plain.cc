@@ -160,8 +160,9 @@ void solve_plain_part3(
                 const uint8_t p2_b = YUV2B(p2_y, p2_u, p2_v) & 0xff;
 
                 // image overlap
-#define MIX(a, x1, x2) ((((a) * (x1)) + (256 - (a)) * (x2)) >> 8)
-#define MIX(a, x1, x2) ((((a) * ((x1) - (x2))) >> 8) + x2)
+// #define MIX(a, x1, x2) ((((a) * (x1)) + (256 - (a)) * (x2)) >> 8)
+// #define MIX(a, x1, x2) ((((a) * ((x1) - (x2))) >> 8) + x2)
+#define MIX(a, x1, x2) (((((a) * (x1)) + ((256 - (a)) * (x2))) + 128) >> 8)
                 const uint16_t r_prime = MIX(alpha, p1_r, p2_r);
                 const uint16_t g_prime = MIX(alpha, p1_g, p2_g);
                 const uint16_t b_prime = MIX(alpha, p1_b, p2_b);
