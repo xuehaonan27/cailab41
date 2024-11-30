@@ -210,8 +210,8 @@ void solve_sse2_part2(
                             8),
                         u16_512_128);
 
-                __int64_t y_prime_yvec1_packed = _mm_cvtsi128_si64(_mm_packs_epi16(y_prime_yvec1, _mm_setzero_si128()));
-                __int64_t y_prime_yvec2_packed = _mm_cvtsi128_si64(_mm_packs_epi16(y_prime_yvec2, _mm_setzero_si128()));
+                __int64_t y_prime_yvec1_packed = _mm_cvtsi128_si64(_mm_packus_epi16(y_prime_yvec1, _mm_setzero_si128()));
+                __int64_t y_prime_yvec2_packed = _mm_cvtsi128_si64(_mm_packus_epi16(y_prime_yvec2, _mm_setzero_si128()));
 
                 // XXYYZZWW
                 __m128i u_prime_yvec1_shuffled = _mm_shufflehi_epi16(_mm_shufflelo_epi16(u_prime_yvec1, imm8), imm8);
@@ -220,14 +220,17 @@ void solve_sse2_part2(
                 __m128i u_prime_yvec1_permuted = _mm_shuffle_epi32(u_prime_yvec1_shuffled, imm8);
                 __m128i v_prime_yvec1_permuted = _mm_shuffle_epi32(v_prime_yvec1_shuffled, imm8);
                 // XYZWXYZW
-                __int64_t u_prime_yvec1_packed = _mm_cvtsi128_si64(u_prime_yvec1_permuted);
-                __int64_t v_prime_yvec1_packed = _mm_cvtsi128_si64(v_prime_yvec1_permuted);
+                __m128i u_prime_yvec1_repeated = _mm_packus_epi16(u_prime_yvec1_permuted, _mm_setzero_si128());
+                __m128i v_prime_yvec1_repeated = _mm_packus_epi16(v_prime_yvec1_permuted, _mm_setzero_si128());
+
+                int u_prime_yvec1_packed = _mm_cvtsi128_si32(u_prime_yvec1_repeated);
+                int v_prime_yvec1_packed = _mm_cvtsi128_si32(v_prime_yvec1_repeated);
 
                 // Store value
                 *(__int64_t *)((uint8_t *)y_result + image_idx * Y_SIZE + y_index_1) = y_prime_yvec1_packed;
                 *(__int64_t *)((uint8_t *)y_result + image_idx * Y_SIZE + y_index_2) = y_prime_yvec2_packed;
-                *(__int64_t *)((uint8_t *)u_result + image_idx * U_SIZE + uv_index) = u_prime_yvec1_packed;
-                *(__int64_t *)((uint8_t *)v_result + image_idx * V_SIZE + uv_index) = v_prime_yvec1_packed;
+                *(int *)((uint8_t *)u_result + image_idx * U_SIZE + uv_index) = u_prime_yvec1_packed;
+                *(int *)((uint8_t *)v_result + image_idx * V_SIZE + uv_index) = v_prime_yvec1_packed;
             }
         }
     }
