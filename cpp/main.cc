@@ -69,6 +69,9 @@ int solve_part2(Option opt, fs::path &yuv_path, fs::path &save_dir)
     case Option::Mmx:
         break;
     case Option::Sse2:
+        start_time = clock();
+        solve_sse2_part2(y_data, u_data, v_data, y_result, u_result, v_result);
+        end_time = clock();
         break;
     case Option::Avx2:
         break;

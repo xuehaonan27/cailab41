@@ -998,3 +998,5 @@ void solve_avx512_part3(
         }
     }
 }
+
+#undef VECTOR_SIZE
