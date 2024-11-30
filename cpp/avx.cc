@@ -171,7 +171,6 @@ void solve_avx512(
                 __m512i b_prime_yvec2 = _mm512_srli_epi16(_mm512_mullo_epi16(alpha_vec, b_yvec2), 8);
 
                 // ARGB -> YUV
-
                 __m512i y_prime_yvec1 =
                     _mm512_add_epi16(
                         _mm512_srai_epi16(
@@ -315,6 +314,7 @@ void solve_avx512_part3(
     {
         const uint8_t alpha = 1 + image_idx * 3;
         const __m512i alpha_vec = _mm512_set1_epi16(alpha);
+        const __m512i alpha_256_minus_vec = _mm512_sub_epi16(u16_512_256, alpha_vec);
         for (int j = 0; j < HEIGHT; j += 2)
         {
             for (int i = 0; i < WIDTH; i += VECTOR_SIZE)
@@ -508,67 +508,15 @@ void solve_avx512_part3(
 
                 // #define MIX(a, x1, x2) ((((a) * ((x1) - (x2))) >> 8) + x2)
                 // image overlap
-                /* __m512i r_prime_yvec1 =
-                    _mm512_add_epi16(_mm512_srli_epi16(_mm512_mullo_epi16(alpha_vec, _mm512_sub_epi16(p1_r_yvec1, p2_r_yvec1)), 8), p2_r_yvec1);
-                __m512i g_prime_yvec1 =
-                    _mm512_add_epi16(_mm512_srli_epi16(_mm512_mullo_epi16(alpha_vec, _mm512_sub_epi16(p1_g_yvec1, p2_g_yvec1)), 8), p2_g_yvec1);
-                __m512i b_prime_yvec1 =
-                    _mm512_add_epi16(_mm512_srli_epi16(_mm512_mullo_epi16(alpha_vec, _mm512_sub_epi16(p1_b_yvec1, p2_b_yvec1)), 8), p2_b_yvec1);
-                __m512i r_prime_yvec2 =
-                    _mm512_add_epi16(_mm512_srli_epi16(_mm512_mullo_epi16(alpha_vec, _mm512_sub_epi16(p1_r_yvec2, p2_r_yvec2)), 8), p2_r_yvec2);
-                __m512i g_prime_yvec2 =
-                    _mm512_add_epi16(_mm512_srli_epi16(_mm512_mullo_epi16(alpha_vec, _mm512_sub_epi16(p1_g_yvec2, p2_g_yvec2)), 8), p2_g_yvec2);
-                __m512i b_prime_yvec2 =
-                    _mm512_add_epi16(_mm512_srli_epi16(_mm512_mullo_epi16(alpha_vec, _mm512_sub_epi16(p1_b_yvec2, p2_b_yvec2)), 8), p2_b_yvec2);
-                */
-
-                /*__m512i r_prime_yvec1 =
-                    _mm512_srli_epi16(
-                        _mm512_add_epi16(
-                            _mm512_mullo_epi16(alpha_vec, p1_r_yvec1),
-                            _mm512_mullo_epi16(_mm512_sub_epi16(u16_512_256, alpha_vec), p2_r_yvec1)),
-                        8);
-                __m512i g_prime_yvec1 =
-                    _mm512_srli_epi16(
-                        _mm512_add_epi16(
-                            _mm512_mullo_epi16(alpha_vec, p1_g_yvec1),
-                            _mm512_mullo_epi16(_mm512_sub_epi16(u16_512_256, alpha_vec), p2_g_yvec1)),
-                        8);
-                __m512i b_prime_yvec1 =
-                    _mm512_srli_epi16(
-                        _mm512_add_epi16(
-                            _mm512_mullo_epi16(alpha_vec, p1_g_yvec1),
-                            _mm512_mullo_epi16(_mm512_sub_epi16(u16_512_256, alpha_vec), p2_g_yvec1)),
-                        8);
-
-                __m512i r_prime_yvec2 =
-                    _mm512_srli_epi16(
-                        _mm512_add_epi16(
-                            _mm512_mullo_epi16(alpha_vec, p1_r_yvec2),
-                            _mm512_mullo_epi16(_mm512_sub_epi16(u16_512_256, alpha_vec), p2_r_yvec2)),
-                        8);
-                __m512i g_prime_yvec2 =
-                    _mm512_srli_epi16(
-                        _mm512_add_epi16(
-                            _mm512_mullo_epi16(alpha_vec, p1_g_yvec2),
-                            _mm512_mullo_epi16(_mm512_sub_epi16(u16_512_256, alpha_vec), p2_g_yvec2)),
-                        8);
-                __m512i b_prime_yvec2 =
-                    _mm512_srli_epi16(
-                        _mm512_add_epi16(
-                            _mm512_mullo_epi16(alpha_vec, p1_g_yvec2),
-                            _mm512_mullo_epi16(_mm512_sub_epi16(u16_512_256, alpha_vec), p2_g_yvec2)),
-                        8);
-                */
-
                 // #define MIX(a, x1, x2) (((((a) * (x1)) + ((256 - (a)) * (x2))) + 128) >> 8)
+                // Max = 256 * 255 + 128 = 65408 < 65535
                 __m512i r_prime_yvec1 =
                     _mm512_srli_epi16(
                         _mm512_add_epi16(
                             _mm512_add_epi16(
                                 _mm512_mullo_epi16(alpha_vec, p1_r_yvec1),
                                 _mm512_mullo_epi16(
-                                    _mm512_sub_epi16(u16_512_256, alpha_vec), // Optimization
+                                    alpha_256_minus_vec,
                                     p2_r_yvec1)),
                             u16_512_128),
                         8);
@@ -578,7 +526,7 @@ void solve_avx512_part3(
                             _mm512_add_epi16(
                                 _mm512_mullo_epi16(alpha_vec, p1_g_yvec1),
                                 _mm512_mullo_epi16(
-                                    _mm512_sub_epi16(u16_512_256, alpha_vec), // Optimization
+                                    alpha_256_minus_vec,
                                     p2_g_yvec1)),
                             u16_512_128),
                         8);
@@ -588,7 +536,7 @@ void solve_avx512_part3(
                             _mm512_add_epi16(
                                 _mm512_mullo_epi16(alpha_vec, p1_b_yvec1),
                                 _mm512_mullo_epi16(
-                                    _mm512_sub_epi16(u16_512_256, alpha_vec), // Optimization
+                                    alpha_256_minus_vec,
                                     p2_b_yvec1)),
                             u16_512_128),
                         8);
@@ -599,7 +547,7 @@ void solve_avx512_part3(
                             _mm512_add_epi16(
                                 _mm512_mullo_epi16(alpha_vec, p1_r_yvec2),
                                 _mm512_mullo_epi16(
-                                    _mm512_sub_epi16(u16_512_256, alpha_vec), // Optimization
+                                    alpha_256_minus_vec,
                                     p2_r_yvec2)),
                             u16_512_128),
                         8);
@@ -609,7 +557,7 @@ void solve_avx512_part3(
                             _mm512_add_epi16(
                                 _mm512_mullo_epi16(alpha_vec, p1_g_yvec2),
                                 _mm512_mullo_epi16(
-                                    _mm512_sub_epi16(u16_512_256, alpha_vec), // Optimization
+                                    alpha_256_minus_vec,
                                     p2_g_yvec2)),
                             u16_512_128),
                         8);
@@ -619,13 +567,12 @@ void solve_avx512_part3(
                             _mm512_add_epi16(
                                 _mm512_mullo_epi16(alpha_vec, p1_b_yvec2),
                                 _mm512_mullo_epi16(
-                                    _mm512_sub_epi16(u16_512_256, alpha_vec), // Optimization
+                                    alpha_256_minus_vec,
                                     p2_b_yvec2)),
                             u16_512_128),
                         8);
 
                 // ARGB -> YUV
-
                 __m512i y_prime_yvec1 =
                     _mm512_add_epi16(
                         _mm512_srai_epi16(
