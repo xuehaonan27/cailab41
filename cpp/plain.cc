@@ -114,7 +114,8 @@ void solve_plain_int(
 // #define RGB2Y(r, g, b) (uint8_t)(((66 * (r) + 129 * (g) + 25 * (b) + 128) >> 8) + 16)
 // #define RGB2U(r, g, b) (uint8_t)(((-38 * (r) - 74 * (g) + 112 * (b) + 128) >> 8) + 128)
 // #define RGB2V(r, g, b) (uint8_t)(((112 * (r) - 94 * (g) - 18 * (b) + 128) >> 8) + 128)
-#define RGB2Y(r, g, b) (uint8_t)((((66 * (r) - 8192) + (129 * (g) - 16384) + (25 * (b) - 1920)) >> 8) + 120)
+#define RGB2Y(r, g, b) (uint8_t)((((66 * (r) - 8192) + (129 * (g) - 16384) + 25 * (b)) >> 8) + 112)
+// #define RGB2Y(r, g, b) (uint8_t)((((66 * (r) - 8192) + (129 * (g) - 16384) + (25 * (b) - 1920)) >> 8) + 120)
 #define RGB2U(r, g, b) (uint8_t)((((112 * (b) - 38 * (r)) + (128 - 74 * (g))) >> 8) + 128)
 #define RGB2V(r, g, b) (uint8_t)((((112 * (r) - 94 * (g)) + (128 - 18 * (b))) >> 8) + 128)
                 uint8_t y2 = RGB2Y(r2, g2, b2);

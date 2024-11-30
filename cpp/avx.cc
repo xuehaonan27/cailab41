@@ -3,6 +3,7 @@
 #include "misc.hh"
 #include <cstdint>
 #include <immintrin.h> // immintrin is for AVX
+#include <omp.h>
 
 #include <cstdio>
 
@@ -58,13 +59,16 @@ void solve_avx512(
     uint8_t **u_result,
     uint8_t **v_result)
 {
+    #pragma omp parallel for
     for (int image_idx = 0; image_idx < 84; image_idx++)
     {
         const uint8_t alpha = 1 + image_idx * 3;
         __m512i alpha_vec = _mm512_set1_epi16(alpha);
 
+        #pragma omp parallel for
         for (int j = 0; j < HEIGHT; j += 2) // read 2 Y data lines a time
         {
+            #pragma omp parallel for
             for (int i = 0; i < WIDTH; i += VECTOR_SIZE)
             {
                 size_t y_index_1 = j * WIDTH + i;
@@ -178,9 +182,9 @@ void solve_avx512(
                                 _mm512_add_epi16(
                                     _mm512_sub_epi16(_mm512_mullo_epi16(u16_512_66, r_prime_yvec1), u16_512_8192),
                                     _mm512_sub_epi16(_mm512_mullo_epi16(u16_512_129, g_prime_yvec1), u16_512_16384)),
-                                _mm512_sub_epi16(_mm512_mullo_epi16(u16_512_25, b_prime_yvec1), u16_512_1920)),
+                                _mm512_mullo_epi16(u16_512_25, b_prime_yvec1)),
                             8),
-                        u16_512_120);
+                        u16_512_112);
 
                 __m512i y_prime_yvec2 =
                     _mm512_add_epi16(
@@ -189,9 +193,9 @@ void solve_avx512(
                                 _mm512_add_epi16(
                                     _mm512_sub_epi16(_mm512_mullo_epi16(u16_512_66, r_prime_yvec2), u16_512_8192),
                                     _mm512_sub_epi16(_mm512_mullo_epi16(u16_512_129, g_prime_yvec2), u16_512_16384)),
-                                _mm512_sub_epi16(_mm512_mullo_epi16(u16_512_25, b_prime_yvec2), u16_512_1920)),
+                                _mm512_mullo_epi16(u16_512_25, b_prime_yvec2)),
                             8),
-                        u16_512_120);
+                        u16_512_112);
 
                 __m512i u_prime_yvec1 =
                     _mm512_add_epi16(
@@ -464,9 +468,9 @@ void solve_avx512_loop_unfold(
                                 _mm512_add_epi16(
                                     _mm512_sub_epi16(_mm512_mullo_epi16(u16_512_66, r_prime_yvec1), u16_512_8192),
                                     _mm512_sub_epi16(_mm512_mullo_epi16(u16_512_129, g_prime_yvec1), u16_512_16384)),
-                                _mm512_sub_epi16(_mm512_mullo_epi16(u16_512_25, b_prime_yvec1), u16_512_1920)),
+                                _mm512_mullo_epi16(u16_512_25, b_prime_yvec1)),
                             8),
-                        u16_512_120);
+                        u16_512_112);
 
                 __m512i y_prime_yvec2 =
                     _mm512_add_epi16(
@@ -475,9 +479,9 @@ void solve_avx512_loop_unfold(
                                 _mm512_add_epi16(
                                     _mm512_sub_epi16(_mm512_mullo_epi16(u16_512_66, r_prime_yvec2), u16_512_8192),
                                     _mm512_sub_epi16(_mm512_mullo_epi16(u16_512_129, g_prime_yvec2), u16_512_16384)),
-                                _mm512_sub_epi16(_mm512_mullo_epi16(u16_512_25, b_prime_yvec2), u16_512_1920)),
+                                _mm512_mullo_epi16(u16_512_25, b_prime_yvec2)),
                             8),
-                        u16_512_120);
+                        u16_512_112);
 
                 __m512i y_prime_yvec3 =
                     _mm512_add_epi16(
@@ -486,9 +490,9 @@ void solve_avx512_loop_unfold(
                                 _mm512_add_epi16(
                                     _mm512_sub_epi16(_mm512_mullo_epi16(u16_512_66, r_prime_yvec3), u16_512_8192),
                                     _mm512_sub_epi16(_mm512_mullo_epi16(u16_512_129, g_prime_yvec3), u16_512_16384)),
-                                _mm512_sub_epi16(_mm512_mullo_epi16(u16_512_25, b_prime_yvec3), u16_512_1920)),
+                                _mm512_mullo_epi16(u16_512_25, b_prime_yvec3)),
                             8),
-                        u16_512_120);
+                        u16_512_112);
 
                 __m512i y_prime_yvec4 =
                     _mm512_add_epi16(
@@ -497,9 +501,9 @@ void solve_avx512_loop_unfold(
                                 _mm512_add_epi16(
                                     _mm512_sub_epi16(_mm512_mullo_epi16(u16_512_66, r_prime_yvec4), u16_512_8192),
                                     _mm512_sub_epi16(_mm512_mullo_epi16(u16_512_129, g_prime_yvec4), u16_512_16384)),
-                                _mm512_sub_epi16(_mm512_mullo_epi16(u16_512_25, b_prime_yvec4), u16_512_1920)),
+                                _mm512_mullo_epi16(u16_512_25, b_prime_yvec4)),
                             8),
-                        u16_512_120);
+                        u16_512_112);
 
                 __m512i u_prime_yvec1 =
                     _mm512_add_epi16(
@@ -662,13 +666,16 @@ void solve_avx512_part3(
     uint8_t **u_result,
     uint8_t **v_result)
 {
+    #pragma omp parallel for
     for (int image_idx = 0; image_idx < 84; image_idx++)
     {
         const uint8_t alpha = 1 + image_idx * 3;
         const __m512i alpha_vec = _mm512_set1_epi16(alpha);
         const __m512i alpha_256_minus_vec = _mm512_sub_epi16(u16_512_256, alpha_vec);
+        #pragma omp parallel for
         for (int j = 0; j < HEIGHT; j += 2)
         {
+            #pragma omp parallel for
             for (int i = 0; i < WIDTH; i += VECTOR_SIZE)
             {
                 size_t y_index_1 = j * WIDTH + i;
@@ -930,9 +937,9 @@ void solve_avx512_part3(
                                 _mm512_add_epi16(
                                     _mm512_sub_epi16(_mm512_mullo_epi16(u16_512_66, r_prime_yvec1), u16_512_8192),
                                     _mm512_sub_epi16(_mm512_mullo_epi16(u16_512_129, g_prime_yvec1), u16_512_16384)),
-                                _mm512_sub_epi16(_mm512_mullo_epi16(u16_512_25, b_prime_yvec1), u16_512_1920)),
+                                _mm512_mullo_epi16(u16_512_25, b_prime_yvec1)),
                             8),
-                        u16_512_120);
+                        u16_512_112);
 
                 __m512i y_prime_yvec2 =
                     _mm512_add_epi16(
@@ -941,9 +948,9 @@ void solve_avx512_part3(
                                 _mm512_add_epi16(
                                     _mm512_sub_epi16(_mm512_mullo_epi16(u16_512_66, r_prime_yvec2), u16_512_8192),
                                     _mm512_sub_epi16(_mm512_mullo_epi16(u16_512_129, g_prime_yvec2), u16_512_16384)),
-                                _mm512_sub_epi16(_mm512_mullo_epi16(u16_512_25, b_prime_yvec2), u16_512_1920)),
+                                _mm512_mullo_epi16(u16_512_25, b_prime_yvec2)),
                             8),
-                        u16_512_120);
+                        u16_512_112);
 
                 __m512i u_prime_yvec1 =
                     _mm512_add_epi16(
