@@ -11,6 +11,14 @@ void solve_avx512(
     uint8_t **u_result,
     uint8_t **v_result);
 
+void solve_avx512_loop_unfold(
+    const uint8_t *y_data,
+    const uint8_t *u_data,
+    const uint8_t *v_data,
+    uint8_t **y_result,
+    uint8_t **u_result,
+    uint8_t **v_result);
+
 void test();
 
 void solve_avx512_part3(

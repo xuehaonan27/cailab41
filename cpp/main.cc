@@ -75,6 +75,7 @@ int solve_part2(Option opt, fs::path &yuv_path, fs::path &save_dir)
     case Option::Avx512:
         start_time = clock();
         solve_avx512(y_data, u_data, v_data, y_result, u_result, v_result);
+        // solve_avx512_loop_unfold(y_data, u_data, v_data, y_result, u_result, v_result);
         end_time = clock();
         break;
     default:
