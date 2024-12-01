@@ -10,6 +10,7 @@
 #include "plain.hh"
 #include "mmx.hh"
 #include "sse2.hh"
+#include "avx2.hh"
 #include "avx.hh"
 
 #include "misc.hh"
@@ -77,6 +78,9 @@ int solve_part2(Option opt, fs::path &yuv_path, fs::path &save_dir)
         end_time = clock();
         break;
     case Option::Avx2:
+        start_time = clock();
+        solve_avx2_part2(y_data, u_data, v_data, y_result, u_result, v_result);
+        end_time = clock();
         break;
     case Option::Avx512:
         start_time = clock();
