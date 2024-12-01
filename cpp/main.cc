@@ -8,10 +8,14 @@
 #include <cstdio>
 
 #include "plain.hh"
+#ifdef VECTORIZATION
 #include "mmx.hh"
 #include "sse2.hh"
 #include "avx2.hh"
 #include "avx.hh"
+#endif
+
+#define LAB_LOOP_TIME 100
 
 #include "misc.hh"
 namespace fs = std::filesystem;
@@ -64,35 +68,74 @@ int solve_part2(Option opt, fs::path &yuv_path, fs::path &save_dir)
     {
     case Option::Plain:
         start_time = clock();
+#ifndef LAB_TIME
         solve_plain_int(y_data, u_data, v_data, y_result, u_result, v_result);
+#else
+        for (int i = 0; i < LAB_LOOP_TIME; i++)
+        {
+            solve_plain_int(y_data, u_data, v_data, y_result, u_result, v_result);
+        }
+#endif
         end_time = clock();
         break;
+#ifdef VECTORIZATION
     case Option::Mmx:
         start_time = clock();
+#ifndef LAB_TIME
         solve_mmx_part2(y_data, u_data, v_data, y_result, u_result, v_result);
+#else
+        for (int i = 0; i < LAB_LOOP_TIME; i++)
+        {
+            solve_mmx_part2(y_data, u_data, v_data, y_result, u_result, v_result);
+        }
+#endif
         end_time = clock();
         break;
     case Option::Sse2:
         start_time = clock();
+#ifndef LAB_TIME
         solve_sse2_part2(y_data, u_data, v_data, y_result, u_result, v_result);
+#else
+        for (int i = 0; i < LAB_LOOP_TIME; i++)
+        {
+            solve_sse2_part2(y_data, u_data, v_data, y_result, u_result, v_result);
+        }
+#endif
         end_time = clock();
         break;
     case Option::Avx2:
         start_time = clock();
+#ifndef LAB_TIME
         solve_avx2_part2(y_data, u_data, v_data, y_result, u_result, v_result);
+#else
+        for (int i = 0; i < LAB_LOOP_TIME; i++)
+        {
+            solve_avx2_part2(y_data, u_data, v_data, y_result, u_result, v_result);
+        }
+#endif
         end_time = clock();
         break;
     case Option::Avx512:
         start_time = clock();
+#ifndef LAB_TIME
         solve_avx512(y_data, u_data, v_data, y_result, u_result, v_result);
-        // solve_avx512_loop_unfold(y_data, u_data, v_data, y_result, u_result, v_result);
+#else
+        for (int i = 0; i < LAB_LOOP_TIME; i++)
+        {
+            solve_avx512(y_data, u_data, v_data, y_result, u_result, v_result);
+        }
+#endif
         end_time = clock();
         break;
+#endif
     default:
         break;
     }
 
     double elapsed_time = static_cast<double>(end_time - start_time) / CLOCKS_PER_SEC;
+#ifdef LAB_TIME
+    elapsed_time = elapsed_time / LAB_LOOP_TIME;
+#endif
     std::cout << "Elapsed Time: " << elapsed_time << " seconds" << std::endl;
 
     for (int i = 0; i < 84; i++)
@@ -170,49 +213,104 @@ int solve_part3(Option opt, fs::path &yuv_path_1, fs::path &yuv_path_2, fs::path
     {
     case Option::Plain:
         start_time = clock();
+#ifndef LAB_TIME
         solve_plain_part3(
             p1_y_data, p1_u_data, p1_v_data,
             p2_y_data, p2_u_data, p2_v_data,
             y_result, u_result, v_result);
+#else
+        for (int i = 0; i < LAB_LOOP_TIME; i++)
+        {
+            solve_plain_part3(
+                p1_y_data, p1_u_data, p1_v_data,
+                p2_y_data, p2_u_data, p2_v_data,
+                y_result, u_result, v_result);
+        }
+#endif
         end_time = clock();
         break;
+#ifdef VECTORIZATION
     case Option::Mmx:
         start_time = clock();
+#ifndef LAB_TIME
         solve_mmx_part3(
             p1_y_data, p1_u_data, p1_v_data,
             p2_y_data, p2_u_data, p2_v_data,
             y_result, u_result, v_result);
+#else
+        for (int i = 0; i < LAB_LOOP_TIME; i++)
+        {
+            solve_mmx_part3(
+                p1_y_data, p1_u_data, p1_v_data,
+                p2_y_data, p2_u_data, p2_v_data,
+                y_result, u_result, v_result);
+        }
+#endif
         end_time = clock();
         break;
     case Option::Sse2:
         start_time = clock();
+#ifndef LAB_TIME
         solve_sse2_part3(
             p1_y_data, p1_u_data, p1_v_data,
             p2_y_data, p2_u_data, p2_v_data,
             y_result, u_result, v_result);
+#else
+        for (int i = 0; i < LAB_LOOP_TIME; i++)
+        {
+            solve_sse2_part3(
+                p1_y_data, p1_u_data, p1_v_data,
+                p2_y_data, p2_u_data, p2_v_data,
+                y_result, u_result, v_result);
+        }
+#endif
         end_time = clock();
         break;
     case Option::Avx2:
         start_time = clock();
+#ifndef LAB_TIME
         solve_avx2_part3(
             p1_y_data, p1_u_data, p1_v_data,
             p2_y_data, p2_u_data, p2_v_data,
             y_result, u_result, v_result);
+#else
+        for (int i = 0; i < LAB_LOOP_TIME; i++)
+        {
+            solve_avx2_part3(
+                p1_y_data, p1_u_data, p1_v_data,
+                p2_y_data, p2_u_data, p2_v_data,
+                y_result, u_result, v_result);
+        }
+#endif
         end_time = clock();
         break;
     case Option::Avx512:
         start_time = clock();
+#ifndef LAB_TIME
         solve_avx512_part3(
             p1_y_data, p1_u_data, p1_v_data,
             p2_y_data, p2_u_data, p2_v_data,
             y_result, u_result, v_result);
+#else
+        for (int i = 0; i < LAB_LOOP_TIME; i++)
+        {
+            solve_avx512_part3(
+                p1_y_data, p1_u_data, p1_v_data,
+                p2_y_data, p2_u_data, p2_v_data,
+                y_result, u_result, v_result);
+        }
+#endif
         end_time = clock();
         break;
+#endif
     default:
         break;
     }
 
     double elapsed_time = static_cast<double>(end_time - start_time) / CLOCKS_PER_SEC;
+#ifdef LAB_TIME
+    elapsed_time = elapsed_time / LAB_LOOP_TIME;
+#endif
     std::cout << "Elapsed Time: " << elapsed_time << " seconds" << std::endl;
 
     for (int i = 0; i < 84; i++)
@@ -239,6 +337,7 @@ int solve_part3(Option opt, fs::path &yuv_path_1, fs::path &yuv_path_2, fs::path
     return EXIT_SUCCESS;
 }
 
+#ifdef VECTORIZATION
 int solve_test(fs::path &yuv_path_1, fs::path &yuv_path_2, fs::path &save_path)
 {
     std::cout << "YUV file: " << yuv_path_1 << ' ' << yuv_path_2 << std::endl;
@@ -352,6 +451,7 @@ int solve_test(fs::path &yuv_path_1, fs::path &yuv_path_2, fs::path &save_path)
     free(v_result_avx512);
     return EXIT_SUCCESS;
 }
+#endif
 
 int main(int argc, char *argv[])
 {
@@ -404,6 +504,7 @@ int main(int argc, char *argv[])
         fs::path save_dir = argv[5];
         return solve_part3(opt, yuv_path_1, yuv_path_2, save_dir);
     }
+#ifdef VECTORIZATION
     else if (part == "test")
     {
         fs::path yuv_path_1 = argv[3];
@@ -411,6 +512,7 @@ int main(int argc, char *argv[])
         fs::path save_path = argv[5];
         return solve_test(yuv_path_1, yuv_path_2, save_path);
     }
+#endif
     else
     {
         std::cerr << "Invalid part: " << part << ", available: part2 part3" << std::endl;
