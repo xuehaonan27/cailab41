@@ -173,6 +173,12 @@ int solve_part3(Option opt, fs::path &yuv_path_1, fs::path &yuv_path_2, fs::path
         end_time = clock();
         break;
     case Option::Mmx:
+        start_time = clock();
+        solve_mmx_part3(
+            p1_y_data, p1_u_data, p1_v_data,
+            p2_y_data, p2_u_data, p2_v_data,
+            y_result, u_result, v_result);
+        end_time = clock();
         break;
     case Option::Sse2:
         start_time = clock();
