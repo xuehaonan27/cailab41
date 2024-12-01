@@ -175,6 +175,12 @@ int solve_part3(Option opt, fs::path &yuv_path_1, fs::path &yuv_path_2, fs::path
     case Option::Mmx:
         break;
     case Option::Sse2:
+        start_time = clock();
+        solve_sse2_part3(
+            p1_y_data, p1_u_data, p1_v_data,
+            p2_y_data, p2_u_data, p2_v_data,
+            y_result, u_result, v_result);
+        end_time = clock();
         break;
     case Option::Avx2:
         break;
@@ -223,7 +229,8 @@ int solve_test(fs::path &yuv_path_1, fs::path &yuv_path_2, fs::path &save_path)
     std::cout << "Test result to " << save_path << std::endl;
 
     FILE *output_file = fopen(save_path.c_str(), "w");
-    if (!output_file) {
+    if (!output_file)
+    {
         std::cerr << "Fail to open the output file" << std::endl;
     }
 
@@ -279,7 +286,6 @@ int solve_test(fs::path &yuv_path_1, fs::path &yuv_path_2, fs::path &save_path)
         y_result_avx512, u_result_avx512, v_result_avx512);
 
     // Compare all these bytes
-    
 
     // Y result
     for (int i = 0; i < 84 * Y_SIZE; i++)
@@ -313,7 +319,7 @@ int solve_test(fs::path &yuv_path_1, fs::path &yuv_path_2, fs::path &save_path)
             fprintf(output_file, "V[%d] plain=%02x avx512=%02x\n", i, plain_byte, avx512_byte);
         }
     }
-    
+
     fclose(output_file);
 
     free(p1_y_data);
